@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonInclude;
 import lombok.Data;
 import ph.api.payment_gateway.entity.enums.PaymentStatus;
 
+import java.math.BigDecimal;
 import java.util.UUID;
 
 @Data
@@ -11,6 +12,7 @@ import java.util.UUID;
 public class PaymentResponse {
     private UUID paymentId;
     private String externalReference;
+    private BigDecimal amount;
     private PaymentStatus status;
     private String checkoutUrl;
 }

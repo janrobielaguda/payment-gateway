@@ -19,6 +19,12 @@ import java.util.UUID;
 public class PaymentController {
     private final PaymentService paymentService;
 
+    @GetMapping("/{id}")
+    public ResponseEntity<PaymentResponse> getPayment(@PathVariable("id") UUID id) {
+        PaymentResponse payment = paymentService.getPayment(id);
+        return ResponseEntity.ok(payment);
+    }
+
     @PostMapping
     public ResponseEntity<PaymentResponse> createPayment(@RequestBody CreatePaymentRequest paymentRequest){
         PaymentResponse createdPayment = paymentService.payment(paymentRequest);

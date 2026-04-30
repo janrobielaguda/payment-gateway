@@ -8,6 +8,7 @@ import java.util.UUID;
 
 public interface PaymentService {
     PaymentResponse payment(CreatePaymentRequest createPaymentRequest);
+    PaymentResponse getPayment(UUID paymentId);
     PaymentResponse processPayment(UUID paymentId);
     void handleGatewayCallback(GatewayWebhookRequest request);
 }

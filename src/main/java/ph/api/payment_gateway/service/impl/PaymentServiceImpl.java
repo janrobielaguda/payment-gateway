@@ -22,6 +22,19 @@ public class PaymentServiceImpl implements PaymentService {
     private final GatewayService gatewayService;
     private final PaymentRepository paymentRepository;
 
+    @Override
+    public PaymentResponse getPayment(UUID paymentId) {
+        Payment payment = paymentRepository.findById(paymentId)
+                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + paymentId));
+
+        PaymentResponse response = new PaymentResponse();
+        response.setPaymentId(payment.getId());
+        response.setStatus(payment.getStatus());
+        response.setExternalReference(payment.getExternalReference());
+        response.setAmount(payment.getAmount());
+
+        return response;
+    }
 
     @Override
     public PaymentResponse payment(CreatePaymentRequest createPaymentRequest) {
@@ -37,6 +50,7 @@ public class PaymentServiceImpl implements PaymentService {
         PaymentResponse paymentResponse = new PaymentResponse();
         paymentResponse.setPaymentId(savedPayment.getId());
         paymentResponse.setStatus(savedPayment.getStatus());
+        paymentResponse.setCheckoutUrl("http://localhost:8080/api/v1/payment/" + savedPayment.getId());
         
         return paymentResponse;
     }
