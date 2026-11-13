@@ -10,11 +10,11 @@ public class GatewayService {
 
     public GatewayInitResponse initiate(Payment payment) {
 
-        GatewayInitResponse res = new GatewayInitResponse();
+        String externalReference = "EXT-" + System.currentTimeMillis();
 
-        res.setExternalReference("EXT-" + System.currentTimeMillis());
-        res.setCheckoutUrl("https://fake-gateway/pay/" + res.getExternalReference());
-
-        return res;
+        return new GatewayInitResponse(
+                externalReference,
+                "https://fake-gateway/pay/" + externalReference
+        );
     }
 }

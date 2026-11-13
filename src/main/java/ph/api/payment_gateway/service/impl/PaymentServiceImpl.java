@@ -27,32 +27,33 @@ public class PaymentServiceImpl implements PaymentService {
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("Payment not found with id: " + paymentId));
 
-        PaymentResponse response = new PaymentResponse();
-        response.setPaymentId(payment.getId());
-        response.setStatus(payment.getStatus());
-        response.setExternalReference(payment.getExternalReference());
-        response.setAmount(payment.getAmount());
-
-        return response;
+        return new PaymentResponse(
+                payment.getId(),
+                payment.getExternalReference(),
+                payment.getAmount(),
+                payment.getStatus(),
+                null
+        );
     }
 
     @Override
     public PaymentResponse payment(CreatePaymentRequest createPaymentRequest) {
 
         Payment payment = new Payment();
-        payment.setReferenceId(createPaymentRequest.getReferenceId());
-        payment.setAmount(createPaymentRequest.getAmount());
-        payment.setCurrency(createPaymentRequest.getCurrency());
+        payment.setReferenceId(createPaymentRequest.referenceId());
+        payment.setAmount(createPaymentRequest.amount());
+        payment.setCurrency(createPaymentRequest.currency());
         payment.setStatus(PaymentStatus.PENDING);
 
         Payment savedPayment = paymentRepository.save(payment);
 
-        PaymentResponse paymentResponse = new PaymentResponse();
-        paymentResponse.setPaymentId(savedPayment.getId());
-        paymentResponse.setStatus(savedPayment.getStatus());
-        paymentResponse.setCheckoutUrl("http://localhost:8080/api/v1/payment/" + savedPayment.getId());
-        
-        return paymentResponse;
+        return new PaymentResponse(
+                savedPayment.getId(),
+                savedPayment.getExternalReference(),
+                savedPayment.getAmount(),
+                savedPayment.getStatus(),
+                "http://localhost:8080/api/v1/payment/" + savedPayment.getId()
+        );
     }
 
     @Transactional
@@ -68,31 +69,32 @@ public class PaymentServiceImpl implements PaymentService {
 
         GatewayInitResponse gateway = gatewayService.initiate(payment);
 
-        payment.setExternalReference(gateway.getExternalReference());
+        payment.setExternalReference(gateway.externalReference());
         payment.setStatus(PaymentStatus.PENDING);
 
         paymentRepository.save(payment);
 
-        PaymentResponse paymentResponse = new PaymentResponse();
-        paymentResponse.setExternalReference(payment.getExternalReference());
-        paymentResponse.setStatus(payment.getStatus());
-        paymentResponse.setCheckoutUrl(gateway.getCheckoutUrl());
-
-        return paymentResponse;
+        return new PaymentResponse(
+                payment.getId(),
+                payment.getExternalReference(),
+                payment.getAmount(),
+                payment.getStatus(),
+                gateway.checkoutUrl()
+        );
     }
 
     @Transactional
     public void handleGatewayCallback(GatewayWebhookRequest request) {
 
         Payment payment = paymentRepository
-                .findByExternalReference(request.getExternalReference())
-                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + request.getExternalReference()));
+                .findByExternalReference(request.externalReference())
+                .orElseThrow(() -> new RuntimeException("Payment not found with id: " + request.externalReference()));
 
         PaymentTransaction tx = new PaymentTransaction();
-        tx.setReferenceNumber(request.getTransactionId());
+        tx.setReferenceNumber(request.transactionId());
         tx.setPayment(payment);
 
-        if (request.getStatus() == PaymentStatus.SUCCESS) {
+        if (request.status() == PaymentStatus.SUCCESS) {
             payment.setStatus(PaymentStatus.SUCCESS);
             tx.setStatus(TransactionStatus.COMPLETED);
         } else {

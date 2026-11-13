@@ -49,10 +49,11 @@ public class PaymentController {
     @PostMapping("/simulate/success")
     public void simulateSuccess(@RequestBody GatewayWebhookRequest externalRef) {
 
-        GatewayWebhookRequest req = new GatewayWebhookRequest();
-        req.setExternalReference(externalRef.getExternalReference());
-        req.setStatus(PaymentStatus.SUCCESS);
-        req.setTransactionId("TXN-" + System.currentTimeMillis());
+        GatewayWebhookRequest req = new GatewayWebhookRequest(
+                "TXN-" + System.currentTimeMillis(),
+                externalRef.externalReference(),
+                PaymentStatus.SUCCESS
+        );
 
         paymentService.handleGatewayCallback(req);
     }
